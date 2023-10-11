@@ -1,1 +1,47 @@
 
+Neo4j memory configs:
+
+Memory configuration for a Neo4j instance is crucial for achieving optimal performance and is dependent on your workload. 
+
+For mixed workloads:
+
+Here's a suggested configuration based on the given memory and the Neo4j documentation:
+
+1. **Page Cache**:
+   
+   - Page cache is used to cache the graph's nodes, relationships, and properties. 
+   - A recommended starting point is 50% of available RAM for machines with up to 32 GB of RAM. Given your machine has 24 GB, you might want to start with 12 GB.
+   
+     ```
+     dbms.memory.pagecache.size=12g
+     ```
+
+2. **Heap Size**:
+
+   - The heap is used by Neo4j for query processing and other computations.
+   - It's generally suggested that for a 24 GB system, setting heap size between 4 GB to 8 GB is a good starting point. Let's take the mid-point.
+   
+     ```
+     dbms.memory.heap.initial_size=6g
+     dbms.memory.heap.max_size=6g
+     ```
+
+3. **Transaction State**:
+   
+   - Memory for transaction state is allocated outside of the configured heap size. 
+   - According to the Neo4j docs, peak allocations can go up to 2 GB for write-intensive operations. However, considering your total available memory, a reservation of 1 GB should be sufficient.
+   - No specific configuration needed, but ensure enough memory is left outside of heap and page cache.
+
+4. **System and Other Services**:
+   
+   - After allocating for the Page Cache, Heap, and expected transaction states, you should reserve memory for the OS and other services. For a 24 GB system, reserving around 4 GB for system processes is recommended.
+
+Given this breakdown:
+
+- Page Cache: 12 GB
+- Heap: 6 GB
+- Transaction State: ~1 GB (allocated outside heap)
+- System and Other Services: ~5 GB (including a buffer)
+
+**Note**: These are starting points. Depending on the nature of your workload (read-heavy, write-heavy, mixed), you may need to adjust these settings. Monitoring the system under real workloads and adjusting based on actual usage is recommended. Always ensure to test configurations in a staging environment before applying them to a production server.
+
