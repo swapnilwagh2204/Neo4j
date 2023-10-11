@@ -45,3 +45,38 @@ Given this breakdown:
 
 **Note**: These are starting points. Depending on the nature of your workload (read-heavy, write-heavy, mixed), you may need to adjust these settings. Monitoring the system under real workloads and adjusting based on actual usage is recommended. Always ensure to test configurations in a staging environment before applying them to a production server.
 
+
+
+
+For write-heavy workloads:
+
+If your workload is write-heavy, there are several considerations you'll need to take into account:
+
+1. **Transaction State**:
+   
+   - Write-heavy workloads result in larger transaction states. The more simultaneous writes, the more memory is used to track these changes before they're committed to the database.
+   - Ensure that there's sufficient memory available outside of the heap to accommodate the peak transaction state.
+
+2. **Heap Size**:
+
+   - With more writes, there will be an increased load on the heap due to the handling of write operations, transactional updates, and temporary object creation.
+   - Thus, allocating a larger portion of the memory to the heap might be beneficial.
+   
+3. **Page Cache**:
+
+   - While the page cache is generally more important for read operations, when data is written, it also goes through the page cache. Hence, reducing this slightly can be an option to accommodate more heap space or transaction state, but don't reduce it too much.
+
+Considering the above and the available 24 GB RAM on your EC2 instance, here's a revised configuration:
+
+```
+# Increase heap size to support more concurrent write transactions and related computations
+dbms.memory.heap.initial_size=8g
+dbms.memory.heap.max_size=8g
+
+# Slightly reduce the page cache size to accommodate the larger heap and potential transaction state
+dbms.memory.pagecache.size=10g
+```
+
+Leave around 6 GB for the system, other services, and transaction states (which can be large for write-heavy operations).
+
+Again, these are general guidelines. Even within write-heavy workloads, the specifics can vary greatly depending on transaction sizes, number of concurrent writes, and other factors. It's crucial to monitor the performance and adjust as necessary, and always test new configurations in a non-production environment first.
